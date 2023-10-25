@@ -1,0 +1,70 @@
+import os
+import numpy as np
+from flask import Flask,request,render_template
+
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+
+
+
+
+
+app = Flask(__name__)  
+
+
+model_path = r'C:\Users\allam\Desktop\pooja\pooja\training\ECG.h5'
+model = load_model(model_path) 
+
+
+@app.route("/") 
+def about():
+    return render_template("home.html")
+
+@app.route("/about") 
+def home():
+    return render_template("home.html")
+
+@app.route("/info") 
+def information():
+    return render_template("information.html")
+
+@app.route("/upload") 
+def test():
+    with app.app_context(): 
+        return render_template("predict.html")  
+
+
+
+@app.route("/predict",methods=["GET","POST"]) 
+def upload():
+    if request.method=='POST':
+        f=request.files['file'] 
+        upload_dir = r'C:\Users\allam\Desktop\pooja\pooja\flask\uploads'
+        
+        filepath = os.path.join(upload_dir, f.filename) 
+        f.save(filepath)  
+
+        
+        img=image.load_img(filepath,target_size=(64,64)) 
+        x=image.img_to_array(img)
+        x=np.expand_dims(x,axis=0)
+        
+        pred=model.predict(x)
+        y_pred = np.argmax(pred)
+        print("prediction",y_pred)
+    
+        index=['Left Bundle Branch Block‎  ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ Left Bundle Branch Block is a heart conduction disorder that affects the hearts electrical signals. There is not a specific dietary recommendation for LBBB. A balanced diet thats low in saturated and trans fats, rich in whole grains, lean proteins, fruits, vegetables, and healthy fats is generally recommended for heart health.',
+               'Normal ‎  ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎  ',
+               'Premature Atrial Contraction ‎  ‎ ‎ ‎ ‎ ‎ ‎ ‎    The prognosis for an infant, child or teenager with benign premature atrial contractions is generally excellent. No special medication treatment is needed; no special activity restrictions or precautions are needed either. It is often the case that the PACs spontaneously decrease in frequency over time.  Occasionally they may completely disappear.  However, provided the premature atrial contractions are determined to be benign, there is no danger to the heart one way or the other.In summary, premature atrial contractions in children are fairly common. Fortunately, there are usually benign.',
+       'Premature Ventricular Contractions ‎  ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎What foods help PVCs?<br>You can try:<br>Consuming foods rich in potassium, such as avocados, bananas, potatoes and spinach.<br>Cutting back on alcohol.\n Drinking lots of fluids.\n Eating regularly to avoid low blood sugar.\n Monitoring your caffeine intake.\nReducing the amount of salt and sugar you eat.', 
+       'Right Bundle Branch Block ‎  ‎ ‎ ‎ ‎ ‎ If you don’t have symptoms and you don’t have heart disease, you don’t need to do anything for right bundle branch block. But if you’ve had other problems like a heart attack or heart failure, you need to continue with treatment for those issues.',
+       'Ventricular Fibrillation ‎  ‎ ‎ ‎ ‎ ‎ If you’re experiencing VF symptoms, have someone nearby call emergency services. If someone near you appears to be experiencing a heart attack, stay with them after you call for help.If they lose consciousness and stop breathing, you will need to perform CPR: <br>causes of ventricular fibrillation?<br>Several things can cause or raise your riskTrusted Source of ventricular fibrillation:<br>Some medications and severe illnesses can also cause VF.<br>Leading a mainly sedentary life or not getting enough exercise may raise the risk of having VF.<br>Electrolyte imbalances, such as low potassium or high potassium, are linked to VF.<br>Acidosis can change the PH of your blood, making it highly acidic.<br>Cardiomyopathy is a disease that can weaken the muscle of your heart.<br>A history of heart conditions in your family raises your overall risk to develop them as well.<br>Alcoholism is also known to put stress on the heart.<br>Congenital channelopathies can cause VF and increase your risk of sudden cardiac death.']
+        result=str(index[y_pred])
+
+        return result
+    return None
+
+
+if __name__=="__main__":
+    app.run(debug=False)
+    
